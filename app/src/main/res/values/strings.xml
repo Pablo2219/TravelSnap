@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TravelSnap</string>
+    <string name="app_tagline">Tus lugares, tus momentos</string>
+
+    <!-- Welcome / login -->
+    <string name="welcome_title">Bienvenido a TravelSnap</string>
+    <string name="welcome_subtitle">Guarda, organiza y explora tus destinos favoritos.</string>
+    <string name="login_email">Correo electrónico</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_button">Iniciar sesión</string>
+    <string name="login_error_invalid">Correo o contraseña incorrectos.</string>
+
+    <!-- Navigation -->
+    <string name="nav_places">Lugares</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_profile">Perfil</string>
+    <string name="navigate_back">Volver</string>
+
+    <!-- Place list -->
+    <string name="places_title">Mis lugares</string>
+    <string name="search_hint">Buscar por nombre</string>
+    <string name="filter_category">Categoría</string>
+    <string name="filter_province">Provincia</string>
+    <string name="filter_all">Todas</string>
+    <string name="filter_favorites">Favoritos</string>
+    <string name="filter_clear">Limpiar filtros</string>
+    <string name="sort_label">Ordenar por</string>
+    <string name="sort_name_asc">Nombre (A-Z)</string>
+    <string name="sort_name_desc">Nombre (Z-A)</string>
+    <string name="empty_places_title">Aún no hay lugares</string>
+    <string name="empty_places_message">Toca el botón + para agregar tu primer lugar.</string>
+    <string name="no_results">Ningún lugar coincide con los filtros.</string>
+
+    <!-- Place form and detail -->
+    <string name="place_new">Nuevo lugar</string>
+    <string name="place_edit">Editar lugar</string>
+    <string name="place_detail">Detalle del lugar</string>
+    <string name="field_name">Nombre</string>
+    <string name="field_description">Descripción</string>
+    <string name="field_category">Categoría</string>
+    <string name="field_province">Provincia</string>
+    <string name="field_latitude">Latitud</string>
+    <string name="field_longitude">Longitud</string>
+    <string name="field_photos">Fotografías</string>
+    <string name="field_favorite">Marcar como favorito</string>
+    <string name="button_save">Guardar</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="button_edit">Editar</string>
+    <string name="button_delete">Eliminar</string>
+    <string name="favorite_add">Agregar a favoritos</string>
+    <string name="favorite_remove">Quitar de favoritos</string>
+
+    <!-- Photos -->
+    <string name="photo_add">Agregar foto</string>
+    <string name="photo_take">Tomar una foto</string>
+    <string name="photo_pick_gallery">Elegir de la galería</string>
+    <string name="photo_remove">Quitar foto</string>
+    <string name="photo_none">No se han agregado fotos</string>
+
+    <!-- Categories -->
+    <string name="category_beach">Playa</string>
+    <string name="category_mountain">Montaña</string>
+    <string name="category_volcano">Volcán</string>
+    <string name="category_waterfall">Catarata</string>
+    <string name="category_natural_park">Parque natural</string>
+    <string name="category_other">Otro</string>
+
+    <!-- Provinces -->
+    <string name="province_san_jose">San José</string>
+    <string name="province_alajuela">Alajuela</string>
+    <string name="province_cartago">Cartago</string>
+    <string name="province_heredia">Heredia</string>
+    <string name="province_guanacaste">Guanacaste</string>
+    <string name="province_puntarenas">Puntarenas</string>
+    <string name="province_limon">Limón</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_delete_title">Eliminar lugar</string>
+    <string name="dialog_delete_message">¿Seguro que deseas eliminar \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="dialog_confirm">Confirmar</string>
+    <string name="dialog_ok">Aceptar</string>
+
+    <!-- Messages -->
+    <string name="msg_place_created">Lugar guardado correctamente.</string>
+    <string name="msg_place_updated">Lugar actualizado correctamente.</string>
+    <string name="msg_place_deleted">Lugar eliminado.</string>
+    <string name="msg_place_not_found">No se encontró el lugar.</string>
+    <string name="msg_generic_error">Algo salió mal. Inténtalo de nuevo.</string>
+    <string name="msg_fix_form_errors">Corrige los campos resaltados.</string>
+    <string name="msg_camera_permission_denied">Se necesita el permiso de la cámara para tomar fotos.</string>
+    <string name="msg_max_photos_reached">Puedes agregar hasta %1$d fotos por lugar.</string>
+
+    <!-- Validation errors -->
+    <string name="error_name_required">El nombre es obligatorio.</string>
+    <string name="error_name_too_short">El nombre debe tener al menos 3 caracteres.</string>
+    <string name="error_name_too_long">El nombre debe tener como máximo 60 caracteres.</string>
+    <string name="error_description_required">La descripción es obligatoria.</string>
+    <string name="error_description_too_long">La descripción debe tener como máximo 500 caracteres.</string>
+    <string name="error_category_required">Selecciona una categoría.</string>
+    <string name="error_province_required">Selecciona una provincia.</string>
+    <string name="error_latitude_invalid">Ingresa una latitud entre -90 y 90.</string>
+    <string name="error_longitude_invalid">Ingresa una longitud entre -180 y 180.</string>
+    <string name="error_email_required">El correo es obligatorio.</string>
+    <string name="error_email_invalid">Ingresa un correo válido.</string>
+    <string name="error_password_required">La contraseña es obligatoria.</string>
+    <string name="error_password_too_short">La contraseña debe tener al menos 6 caracteres.</string>
+
+    <!-- Map -->
+    <string name="map_title">Mapa</string>
+    <string name="map_no_places">No hay lugares para mostrar en el mapa.</string>
+    <string name="map_view_details">Ver detalles</string>
+
+    <!-- Profile and settings -->
+    <string name="profile_title">Perfil y configuración</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_dark_theme">Tema oscuro</string>
+    <string name="language_english">Inglés</string>
+    <string name="language_spanish">Español</string>
+    <string name="settings_logout">Cerrar sesión</string>
+</resources>
