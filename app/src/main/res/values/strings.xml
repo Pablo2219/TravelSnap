@@ -118,4 +118,15 @@
     <string name="language_english">Inglés</string>
     <string name="language_spanish">Español</string>
     <string name="settings_logout">Cerrar sesión</string>
+
+    <!-- Task 4: screens -->
+    <string name="action_more_options">Más opciones</string>
+    <string name="photo_content_description">Foto del lugar</string>
+    <string name="place_location_format">%1$s · %2$s</string>
+    <string name="detail_added_on">Agregado el %1$s</string>
+    <string name="detail_location_title">Ubicación</string>
+    <string name="detail_coordinates">%1$.5f, %2$.5f</string>
+    <string name="login_demo_hint">Cuenta de prueba: %1$s / %2$s</string>
+    <string name="map_placeholder">El mapa interactivo estará disponible próximamente. Toca un lugar para ver su ficha.</string>
+    <string name="msg_camera_unavailable">No se encontró una aplicación de cámara.</string>
 </resources>

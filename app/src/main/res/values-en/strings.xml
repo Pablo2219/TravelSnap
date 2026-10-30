@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TravelSnap</string>
+    <string name="app_tagline">Your places, your moments</string>
+
+    <!-- Welcome / login -->
+    <string name="welcome_title">Welcome to TravelSnap</string>
+    <string name="welcome_subtitle">Save, organize and explore your favorite destinations.</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_button">Sign in</string>
+    <string name="login_error_invalid">Incorrect email or password.</string>
+
+    <!-- Navigation -->
+    <string name="nav_places">Places</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_profile">Profile</string>
+    <string name="navigate_back">Back</string>
+
+    <!-- Place list -->
+    <string name="places_title">My places</string>
+    <string name="search_hint">Search by name</string>
+    <string name="filter_category">Category</string>
+    <string name="filter_province">Province</string>
+    <string name="filter_all">All</string>
+    <string name="filter_favorites">Favorites</string>
+    <string name="filter_clear">Clear filters</string>
+    <string name="sort_label">Sort by</string>
+    <string name="sort_name_asc">Name (A-Z)</string>
+    <string name="sort_name_desc">Name (Z-A)</string>
+    <string name="empty_places_title">No places yet</string>
+    <string name="empty_places_message">Tap the + button to add your first place.</string>
+    <string name="no_results">No places match your filters.</string>
+
+    <!-- Place form and detail -->
+    <string name="place_new">New place</string>
+    <string name="place_edit">Edit place</string>
+    <string name="place_detail">Place details</string>
+    <string name="field_name">Name</string>
+    <string name="field_description">Description</string>
+    <string name="field_category">Category</string>
+    <string name="field_province">Province</string>
+    <string name="field_latitude">Latitude</string>
+    <string name="field_longitude">Longitude</string>
+    <string name="field_photos">Photos</string>
+    <string name="field_favorite">Mark as favorite</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_edit">Edit</string>
+    <string name="button_delete">Delete</string>
+    <string name="favorite_add">Add to favorites</string>
+    <string name="favorite_remove">Remove from favorites</string>
+
+    <!-- Photos -->
+    <string name="photo_add">Add photo</string>
+    <string name="photo_take">Take a photo</string>
+    <string name="photo_pick_gallery">Choose from gallery</string>
+    <string name="photo_remove">Remove photo</string>
+    <string name="photo_none">No photos added</string>
+
+    <!-- Categories -->
+    <string name="category_beach">Beach</string>
+    <string name="category_mountain">Mountain</string>
+    <string name="category_volcano">Volcano</string>
+    <string name="category_waterfall">Waterfall</string>
+    <string name="category_natural_park">Natural park</string>
+    <string name="category_other">Other</string>
+
+    <!-- Provinces -->
+    <string name="province_san_jose">San José</string>
+    <string name="province_alajuela">Alajuela</string>
+    <string name="province_cartago">Cartago</string>
+    <string name="province_heredia">Heredia</string>
+    <string name="province_guanacaste">Guanacaste</string>
+    <string name="province_puntarenas">Puntarenas</string>
+    <string name="province_limon">Limón</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_delete_title">Delete place</string>
+    <string name="dialog_delete_message">Are you sure you want to delete \"%1$s\"? This action cannot be undone.</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_ok">OK</string>
+
+    <!-- Messages -->
+    <string name="msg_place_created">Place saved successfully.</string>
+    <string name="msg_place_updated">Place updated successfully.</string>
+    <string name="msg_place_deleted">Place deleted.</string>
+    <string name="msg_place_not_found">The place could not be found.</string>
+    <string name="msg_generic_error">Something went wrong. Please try again.</string>
+    <string name="msg_fix_form_errors">Please fix the highlighted fields.</string>
+    <string name="msg_camera_permission_denied">Camera permission is required to take photos.</string>
+    <string name="msg_max_photos_reached">You can add up to %1$d photos per place.</string>
+
+    <!-- Validation errors -->
+    <string name="error_name_required">The name is required.</string>
+    <string name="error_name_too_short">The name must have at least 3 characters.</string>
+    <string name="error_name_too_long">The name must have at most 60 characters.</string>
+    <string name="error_description_required">The description is required.</string>
+    <string name="error_description_too_long">The description must have at most 500 characters.</string>
+    <string name="error_category_required">Select a category.</string>
+    <string name="error_province_required">Select a province.</string>
+    <string name="error_latitude_invalid">Enter a latitude between -90 and 90.</string>
+    <string name="error_longitude_invalid">Enter a longitude between -180 and 180.</string>
+    <string name="error_email_required">The email is required.</string>
+    <string name="error_email_invalid">Enter a valid email address.</string>
+    <string name="error_password_required">The password is required.</string>
+    <string name="error_password_too_short">The password must have at least 6 characters.</string>
+
+    <!-- Map -->
+    <string name="map_title">Map</string>
+    <string name="map_no_places">There are no places to show on the map.</string>
+    <string name="map_view_details">View details</string>
+
+    <!-- Profile and settings -->
+    <string name="profile_title">Profile and settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_dark_theme">Dark theme</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="settings_logout">Sign out</string>
+
+    <!-- Task 4: screens -->
+    <string name="action_more_options">More options</string>
+    <string name="photo_content_description">Place photo</string>
+    <string name="place_location_format">%1$s · %2$s</string>
+    <string name="detail_added_on">Added on %1$s</string>
+    <string name="detail_location_title">Location</string>
+    <string name="detail_coordinates">%1$.5f, %2$.5f</string>
+    <string name="login_demo_hint">Demo account: %1$s / %2$s</string>
+    <string name="map_placeholder">The interactive map will be available soon. Tap a place to see its card.</string>
+    <string name="msg_camera_unavailable">No camera app was found.</string>
+</resources>

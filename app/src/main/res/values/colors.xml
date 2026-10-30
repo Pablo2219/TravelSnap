@@ -2,4 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- TravelSnap brand colors (taken from the mockups) -->
+    <color name="brand_primary">#1F6FEB</color>
+    <color name="brand_on_primary">#FFFFFFFF</color>
+    <color name="brand_secondary">#2BB673</color>
+    <color name="favorite">#E5484D</color>
+    <color name="danger">#D93036</color>
 </resources>

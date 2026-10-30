@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Photos taken with the camera are saved here before being attached to a place. -->
+    <cache-path
+        name="photos"
+        path="photos/" />
+</paths>
