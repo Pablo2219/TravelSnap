@@ -1,7 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme (dark). -->
     <style name="Base.Theme.TravelSnap" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">#8AB4F8</item>
+        <item name="colorOnPrimary">#0B2B5B</item>
+        <item name="colorSecondary">#6FD9A5</item>
+        <item name="colorError">#FF8A8E</item>
     </style>
 </resources>
