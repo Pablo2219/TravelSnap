@@ -42,7 +42,7 @@ class PlaceDetailActivity : AppCompatActivity() {
         binding.rvGallery.adapter = galleryAdapter
         binding.btnBack.setOnClickListener { finish() }
         binding.btnFavorite.setOnClickListener {
-            repository.toggleFavoriteNow(placeId)
+            repository.toggleFavorite(placeId)
             loadPlace()
         }
         binding.btnEdit.setOnClickListener {
@@ -98,7 +98,7 @@ class PlaceDetailActivity : AppCompatActivity() {
             .setMessage(getString(R.string.dialog_delete_message, place.name))
             .setNegativeButton(R.string.button_cancel, null)
             .setPositiveButton(R.string.dialog_confirm) { _, _ ->
-                repository.deletePlaceNow(placeId)
+                repository.deletePlace(placeId)
                 Toast.makeText(this, R.string.msg_place_deleted, Toast.LENGTH_SHORT).show()
                 finish()
             }
