@@ -14,7 +14,6 @@ import com.industriaop.travelsnap.util.Constants
 import com.industriaop.travelsnap.util.TextUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 /**
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.update
 class MemoryDataRepository : PlaceRepository, UserRepository {
 
     private val places = mutableListOf<Place>().apply { addAll(seedPlaces()) }
-    private val placeChanges = MutableStateFlow(places.toList())
     private var nextId: Long = (places.maxOfOrNull { it.id } ?: 0L) + 1L
 
     private val currentUser = MutableStateFlow<User?>(null)
@@ -32,20 +30,9 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
 
     // Places: simple in-memory CRUD operations
 
-    override fun observePlaces(filter: PlaceFilter): Flow<List<Place>> =
-        placeChanges.map { list -> applyFilter(list, filter) }
-
-    override fun observePlace(id: Long): Flow<Place?> =
-        placeChanges.map { list -> list.firstOrNull { it.id == id } }
-
-    override suspend fun getPlaceByIdAsync(id: Long): Place? = getPlaceById(id)
-
-    override fun getPlaces(filter: PlaceFilter): List<Place> =
-        applyFilter(places.toList(), filter)
-
-    private fun applyFilter(list: List<Place>, filter: PlaceFilter): List<Place> {
+    override fun getPlaces(filter: PlaceFilter): List<Place> {
         val query = TextUtils.normalize(filter.query)
-        val filtered = list.filter { place ->
+        val filtered = places.filter { place ->
             (query.isEmpty() || TextUtils.normalize(place.name).contains(query)) &&
                 (filter.category == null || place.category == filter.category) &&
                 (filter.province == null || place.province == filter.province) &&
@@ -61,40 +48,28 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
     override fun getPlaceById(id: Long): Place? =
         places.firstOrNull { it.id == id }
 
-    override fun addPlaceNow(place: Place): Long {
+    override fun addPlace(place: Place): Long {
         val id = nextId++
         places.add(place.copy(id = id))
-        placeChanges.value = places.toList()
         return id
     }
 
-    override fun updatePlaceNow(place: Place) {
+    override fun updatePlace(place: Place) {
         val index = places.indexOfFirst { it.id == place.id }
-        if (index >= 0) {
-            places[index] = place
-            placeChanges.value = places.toList()
-        }
+        if (index >= 0) places[index] = place
     }
 
-    override fun deletePlaceNow(id: Long) {
+    override fun deletePlace(id: Long) {
         places.removeAll { it.id == id }
-        placeChanges.value = places.toList()
     }
 
-    override fun toggleFavoriteNow(id: Long) {
+    override fun toggleFavorite(id: Long) {
         val index = places.indexOfFirst { it.id == id }
         if (index >= 0) {
             val place = places[index]
             places[index] = place.copy(isFavorite = !place.isFavorite)
-            placeChanges.value = places.toList()
         }
     }
-
-    // Compatibility methods for screens that are still being migrated.
-    override suspend fun addPlace(place: Place): Long = addPlaceNow(place)
-    override suspend fun updatePlace(place: Place) = updatePlaceNow(place)
-    override suspend fun deletePlace(id: Long) = deletePlaceNow(id)
-    override suspend fun toggleFavorite(id: Long) = toggleFavoriteNow(id)
 
     // User settings
 
