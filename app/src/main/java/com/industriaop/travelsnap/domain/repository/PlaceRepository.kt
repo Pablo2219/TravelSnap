@@ -10,8 +10,8 @@ import com.industriaop.travelsnap.domain.model.PlaceFilter
 interface PlaceRepository {
     fun getPlaces(filter: PlaceFilter = PlaceFilter()): List<Place>
     fun getPlaceById(id: Long): Place?
-    fun addPlace(place: Place): Long
-    fun updatePlace(place: Place)
-    fun deletePlace(id: Long)
-    fun toggleFavorite(id: Long)
+    fun addPlaceNow(place: Place): Long
+    fun updatePlaceNow(place: Place)
+    fun deletePlaceNow(id: Long)
+    fun toggleFavoriteNow(id: Long)
 }
