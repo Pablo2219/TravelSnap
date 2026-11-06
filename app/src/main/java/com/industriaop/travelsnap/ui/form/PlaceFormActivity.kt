@@ -17,6 +17,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.industriaop.travelsnap.R
 import com.industriaop.travelsnap.TravelSnapApp
@@ -79,7 +80,7 @@ class PlaceFormActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
         setupPhotos()
         setupFields()
-        binding.btnSave.setOnClickListener { viewModel.onSave() }
+        binding.btnSave.setOnClickListener { confirmSave() }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -100,6 +101,21 @@ class PlaceFormActivity : AppCompatActivity() {
     }
 
     // ------------------------------------------------------------------ Setup
+
+    private fun confirmSave() {
+        if (placeId == null) {
+            viewModel.onSave()
+            return
+        }
+
+        val placeName = binding.etName.text?.toString()?.trim().orEmpty()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_update_title)
+            .setMessage(getString(R.string.dialog_update_message, placeName))
+            .setNegativeButton(R.string.button_cancel, null)
+            .setPositiveButton(R.string.dialog_confirm) { _, _ -> viewModel.onSave() }
+            .show()
+    }
 
     private fun setupPhotos() {
         photoAdapter = PhotoAdapter(onRemove = { viewModel.onPhotoRemoved(it) })
