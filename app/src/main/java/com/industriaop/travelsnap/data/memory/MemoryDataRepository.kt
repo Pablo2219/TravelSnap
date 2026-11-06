@@ -48,22 +48,22 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
     override fun getPlaceById(id: Long): Place? =
         places.firstOrNull { it.id == id }
 
-    override fun addPlaceNow(place: Place): Long {
+    override fun addPlace(place: Place): Long {
         val id = nextId++
         places.add(place.copy(id = id))
         return id
     }
 
-    override fun updatePlaceNow(place: Place) {
+    override fun updatePlace(place: Place) {
         val index = places.indexOfFirst { it.id == place.id }
         if (index >= 0) places[index] = place
     }
 
-    override fun deletePlaceNow(id: Long) {
+    override fun deletePlace(id: Long) {
         places.removeAll { it.id == id }
     }
 
-    override fun toggleFavoriteNow(id: Long) {
+    override fun toggleFavorite(id: Long) {
         val index = places.indexOfFirst { it.id == id }
         if (index >= 0) {
             val place = places[index]
