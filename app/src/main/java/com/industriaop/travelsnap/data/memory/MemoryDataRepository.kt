@@ -68,7 +68,7 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
         }
     }
 
-    // User settings
+    // User settings and demo login
 
     override fun getCurrentUser(): User? = currentUser
 
@@ -77,12 +77,15 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
     override fun login(email: String, password: String): User? {
         val valid = email.trim().equals(Constants.DEMO_EMAIL, ignoreCase = true) &&
             password == Constants.DEMO_PASSWORD
-        return if (valid) {
-            User(id = 1L, name = Constants.DEMO_NAME, email = Constants.DEMO_EMAIL)
-                .also { currentUser = it }
-        } else {
-            null
-        }
+        if (!valid) return null
+
+        val user = User(
+            id = 1L,
+            name = Constants.DEMO_NAME,
+            email = Constants.DEMO_EMAIL
+        )
+        currentUser = user
+        return user
     }
 
     override fun logout() {
