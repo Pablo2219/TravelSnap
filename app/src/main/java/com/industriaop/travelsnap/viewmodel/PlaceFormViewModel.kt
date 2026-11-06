@@ -153,7 +153,7 @@ class PlaceFormViewModel(
         )
 
         try {
-            if (placeId == null) repository.addPlaceNow(place) else repository.updatePlaceNow(place)
+            if (placeId == null) repository.addPlace(place) else repository.updatePlace(place)
             val successRes =
                 if (placeId == null) R.string.msg_place_created else R.string.msg_place_updated
             _uiState.update {
