@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         adapter = PlaceAdapter(
             onClick = { startActivity(PlaceDetailActivity.newIntent(this, it.id)) },
             onFavoriteClick = {
-                repository.toggleFavoriteNow(it.id)
+                repository.toggleFavorite(it.id)
                 refreshPlaces()
             },
             onEditClick = { startActivity(PlaceFormActivity.newIntent(this, it.id)) },
@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
             .setMessage(getString(R.string.dialog_delete_message, place.name))
             .setNegativeButton(R.string.button_cancel, null)
             .setPositiveButton(R.string.dialog_confirm) { _, _ ->
-                repository.deletePlaceNow(place.id)
+                repository.deletePlace(place.id)
                 refreshPlaces()
                 Toast.makeText(this, R.string.msg_place_deleted, Toast.LENGTH_SHORT).show()
             }
