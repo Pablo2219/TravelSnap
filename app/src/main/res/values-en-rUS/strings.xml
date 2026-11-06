@@ -76,6 +76,8 @@
     <string name="province_limon">Limón</string>
 
     <!-- Dialogs -->
+    <string name="dialog_update_title">Confirm update</string>
+    <string name="dialog_update_message">Do you want to save the changes to "%1$s"?</string>
     <string name="dialog_delete_title">Delete place</string>
     <string name="dialog_delete_message">Are you sure you want to delete \"%1$s\"? This action cannot be undone.</string>
     <string name="dialog_confirm">Confirm</string>
