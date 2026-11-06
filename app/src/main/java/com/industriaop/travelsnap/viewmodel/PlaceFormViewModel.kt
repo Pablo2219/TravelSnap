@@ -1,7 +1,6 @@
 package com.industriaop.travelsnap.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.industriaop.travelsnap.domain.model.Place
 import com.industriaop.travelsnap.domain.model.PlaceCategory
 import com.industriaop.travelsnap.domain.model.Province
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 enum class FormField { NAME, DESCRIPTION, CATEGORY, PROVINCE, LATITUDE, LONGITUDE }
 
@@ -53,27 +51,25 @@ class PlaceFormViewModel(
     }
 
     private fun loadPlace(id: Long) {
-        viewModelScope.launch {
-            val place = repository.getPlaceById(id)
-            if (place == null) {
-                _uiState.update {
-                    it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_place_not_found))
-                }
-                return@launch
-            }
-            createdAt = place.createdAt
+        val place = repository.getPlaceById(id)
+        if (place == null) {
             _uiState.update {
-                it.copy(
-                    name = place.name,
-                    description = place.description,
-                    category = place.category,
-                    province = place.province,
-                    latitude = place.latitude.toString(),
-                    longitude = place.longitude.toString(),
-                    photoUris = place.photoUris,
-                    isFavorite = place.isFavorite
-                )
+                it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_place_not_found))
             }
+            return
+        }
+        createdAt = place.createdAt
+        _uiState.update {
+            it.copy(
+                name = place.name,
+                description = place.description,
+                category = place.category,
+                province = place.province,
+                latitude = place.latitude.toString(),
+                longitude = place.longitude.toString(),
+                photoUris = place.photoUris,
+                isFavorite = place.isFavorite
+            )
         }
     }
 
@@ -156,18 +152,16 @@ class PlaceFormViewModel(
             createdAt = createdAt
         )
 
-        viewModelScope.launch {
-            try {
-                if (placeId == null) repository.addPlace(place) else repository.updatePlace(place)
-                val successRes =
-                    if (placeId == null) R.string.msg_place_created else R.string.msg_place_updated
-                _uiState.update {
-                    it.copy(isSaved = true, message = UiMessage(MessageType.SUCCESS, successRes))
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_generic_error))
-                }
+        try {
+            if (placeId == null) repository.addPlaceNow(place) else repository.updatePlaceNow(place)
+            val successRes =
+                if (placeId == null) R.string.msg_place_created else R.string.msg_place_updated
+            _uiState.update {
+                it.copy(isSaved = true, message = UiMessage(MessageType.SUCCESS, successRes))
+            }
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_generic_error))
             }
         }
     }
