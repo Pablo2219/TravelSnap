@@ -12,9 +12,6 @@ import com.industriaop.travelsnap.domain.repository.PlaceRepository
 import com.industriaop.travelsnap.domain.repository.UserRepository
 import com.industriaop.travelsnap.util.Constants
 import com.industriaop.travelsnap.util.TextUtils
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 
 /**
  * Stores the sample places in a mutable list, following the memory manager
@@ -25,8 +22,8 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
     private val places = mutableListOf<Place>().apply { addAll(seedPlaces()) }
     private var nextId: Long = (places.maxOfOrNull { it.id } ?: 0L) + 1L
 
-    private val currentUser = MutableStateFlow<User?>(null)
-    private val settings = MutableStateFlow(UserSettings())
+    private var currentUser: User? = null
+    private var settings = UserSettings()
 
     // Places: simple in-memory CRUD operations
 
@@ -73,31 +70,31 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
 
     // User settings
 
-    override fun observeCurrentUser(): Flow<User?> = currentUser
+    override fun getCurrentUser(): User? = currentUser
 
-    override fun observeSettings(): Flow<UserSettings> = settings
+    override fun getSettings(): UserSettings = settings
 
-    override suspend fun login(email: String, password: String): User? {
+    override fun login(email: String, password: String): User? {
         val valid = email.trim().equals(Constants.DEMO_EMAIL, ignoreCase = true) &&
             password == Constants.DEMO_PASSWORD
         return if (valid) {
             User(id = 1L, name = Constants.DEMO_NAME, email = Constants.DEMO_EMAIL)
-                .also { currentUser.value = it }
+                .also { currentUser = it }
         } else {
             null
         }
     }
 
-    override suspend fun logout() {
-        currentUser.value = null
+    override fun logout() {
+        currentUser = null
     }
 
-    override suspend fun setLanguage(language: AppLanguage) {
-        settings.update { it.copy(language = language) }
+    override fun setLanguage(language: AppLanguage) {
+        settings = settings.copy(language = language)
     }
 
-    override suspend fun setDarkTheme(enabled: Boolean) {
-        settings.update { it.copy(darkTheme = enabled) }
+    override fun setDarkTheme(enabled: Boolean) {
+        settings = settings.copy(darkTheme = enabled)
     }
 
     // Initial sample data
