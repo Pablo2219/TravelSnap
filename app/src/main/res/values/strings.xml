@@ -77,9 +77,9 @@
 
     <!-- Dialogs -->
     <string name="dialog_update_title">Confirmar actualización</string>
-    <string name=&quot;dialog_update_message&quot;>¿Deseas guardar los cambios de &quot;%1$s&quot;?</string>
+    <string name="dialog_update_message">¿Deseas guardar los cambios de &quot;%1$s&quot;?</string>
     <string name="dialog_delete_title">Eliminar lugar</string>
-    <string name=&quot;dialog_delete_message&quot;>¿Seguro que deseas eliminar &quot;%1$s&quot;? Esta acción no se puede deshacer.</string>
+    <string name="dialog_delete_message">¿Seguro que deseas eliminar &quot;%1$s&quot;? Esta acción no se puede deshacer.</string>
     <string name="dialog_confirm">Confirmar</string>
     <string name="dialog_ok">Aceptar</string>
 
