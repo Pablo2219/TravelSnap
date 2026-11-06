@@ -6,67 +6,57 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
-import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.industriaop.travelsnap.R
 import com.industriaop.travelsnap.TravelSnapApp
 import com.industriaop.travelsnap.databinding.ActivityPlaceFormBinding
+import com.industriaop.travelsnap.domain.model.Place
 import com.industriaop.travelsnap.domain.model.PlaceCategory
 import com.industriaop.travelsnap.domain.model.Province
 import com.industriaop.travelsnap.ui.adapter.PhotoAdapter
 import com.industriaop.travelsnap.ui.common.applySystemBarsPadding
-import com.industriaop.travelsnap.ui.common.show
 import com.industriaop.travelsnap.ui.dialog.AddPhotoBottomSheet
-import com.industriaop.travelsnap.util.MessageType
-import com.industriaop.travelsnap.util.UiMessage
+import com.industriaop.travelsnap.util.Constants
+import com.industriaop.travelsnap.util.Validators
 import com.industriaop.travelsnap.util.labelRes
-import com.industriaop.travelsnap.viewmodel.FormField
-import com.industriaop.travelsnap.viewmodel.PlaceFormUiState
-import com.industriaop.travelsnap.viewmodel.PlaceFormViewModel
-import com.industriaop.travelsnap.viewmodel.ViewModelFactories
-import kotlinx.coroutines.launch
 import java.io.File
 
-/** Create / edit place screen (mockup 3). Pass a place id to edit, nothing to create. */
+/** Creates or edits a place using the repository directly. */
 class PlaceFormActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlaceFormBinding
     private lateinit var photoAdapter: PhotoAdapter
     private var addPhotoSheet: AddPhotoBottomSheet? = null
+    private val repository get() = (application as TravelSnapApp).repository
 
     private val placeId: Long? by lazy {
         intent.getLongExtra(EXTRA_PLACE_ID, NO_ID).takeIf { it != NO_ID }
     }
 
-    private val viewModel: PlaceFormViewModel by viewModels {
-        ViewModelFactories.placeForm((application as TravelSnapApp).repository, placeId)
-    }
-
     private val categoryOptions = PlaceCategory.entries
     private val provinceOptions = Province.entries
-
-    /** Uri of the file the camera app is writing to. */
+    private val photoUris = mutableListOf<String>()
+    private var originalPlace: Place? = null
     private var cameraUri: Uri? = null
 
-    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-        val uri = cameraUri
-        if (saved && uri != null) viewModel.onPhotoAdded(uri.toString())
-    }
+    private val takePicture =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
+            val uri = cameraUri
+            if (saved && uri != null) addPhoto(uri.toString())
+        }
 
-    private val pickPhoto = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) viewModel.onPhotoAdded(uri.toString())
-    }
+    private val pickPhoto =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) addPhoto(uri.toString())
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,17 +66,12 @@ class PlaceFormActivity : AppCompatActivity() {
         binding.root.applySystemBarsPadding()
 
         savedInstanceState?.getString(KEY_CAMERA_URI)?.let { cameraUri = Uri.parse(it) }
-
         binding.toolbar.setNavigationOnClickListener { finish() }
+
         setupPhotos()
         setupFields()
-        binding.btnSave.setOnClickListener { confirmSave() }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { render(it) }
-            }
-        }
+        loadPlaceForEditing()
+        binding.btnSave.setOnClickListener { savePlace() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -100,51 +85,26 @@ class PlaceFormActivity : AppCompatActivity() {
         addPhotoSheet = null
     }
 
-    // ------------------------------------------------------------------ Setup
-
-    private fun confirmSave() {
-        if (placeId == null) {
-            viewModel.onSave()
-            return
-        }
-
-        val placeName = binding.etName.text?.toString()?.trim().orEmpty()
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.dialog_update_title)
-            .setMessage(getString(R.string.dialog_update_message, placeName))
-            .setNegativeButton(R.string.button_cancel, null)
-            .setPositiveButton(R.string.dialog_confirm) { _, _ -> viewModel.onSave() }
-            .show()
-    }
-
     private fun setupPhotos() {
-        photoAdapter = PhotoAdapter(onRemove = { viewModel.onPhotoRemoved(it) })
+        photoAdapter = PhotoAdapter(onRemove = { uri ->
+            photoUris.remove(uri)
+            showPhotos()
+        })
         binding.rvPhotos.adapter = photoAdapter
         binding.btnAddPhoto.setOnClickListener {
             addPhotoSheet = AddPhotoBottomSheet(
                 context = this,
                 onTakePhoto = ::launchCamera,
                 onPickFromGallery = {
-                    pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    pickPhoto.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
                 }
             ).also { it.show() }
         }
     }
 
     private fun setupFields() {
-        binding.etName.doOnTextChanged { text, _, _, _ ->
-            viewModel.onNameChange(text?.toString().orEmpty())
-        }
-        binding.etDescription.doOnTextChanged { text, _, _, _ ->
-            viewModel.onDescriptionChange(text?.toString().orEmpty())
-        }
-        binding.etLatitude.doOnTextChanged { text, _, _, _ ->
-            viewModel.onLatitudeChange(text?.toString().orEmpty())
-        }
-        binding.etLongitude.doOnTextChanged { text, _, _, _ ->
-            viewModel.onLongitudeChange(text?.toString().orEmpty())
-        }
-
         binding.acCategory.setAdapter(
             ArrayAdapter(
                 this,
@@ -152,10 +112,6 @@ class PlaceFormActivity : AppCompatActivity() {
                 categoryOptions.map { getString(it.labelRes()) }
             )
         )
-        binding.acCategory.setOnItemClickListener { _, _, position, _ ->
-            viewModel.onCategoryChange(categoryOptions[position])
-        }
-
         binding.acProvince.setAdapter(
             ArrayAdapter(
                 this,
@@ -163,16 +119,54 @@ class PlaceFormActivity : AppCompatActivity() {
                 provinceOptions.map { getString(it.labelRes()) }
             )
         )
-        binding.acProvince.setOnItemClickListener { _, _, position, _ ->
-            viewModel.onProvinceChange(provinceOptions[position])
-        }
-
-        binding.switchFavorite.setOnCheckedChangeListener { _, checked ->
-            viewModel.onFavoriteChange(checked)
-        }
     }
 
-    // ----------------------------------------------------------------- Camera
+    private fun loadPlaceForEditing() {
+        val id = placeId
+        if (id == null) {
+            binding.toolbar.setTitle(R.string.place_new)
+            return
+        }
+
+        val place = repository.getPlaceById(id)
+        if (place == null) {
+            Toast.makeText(this, R.string.msg_place_not_found, Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        originalPlace = place
+        binding.toolbar.setTitle(R.string.place_edit)
+        binding.etName.setText(place.name)
+        binding.etDescription.setText(place.description)
+        binding.acCategory.setText(getString(place.category.labelRes()), false)
+        binding.acProvince.setText(getString(place.province.labelRes()), false)
+        binding.etLatitude.setText(place.latitude.toString())
+        binding.etLongitude.setText(place.longitude.toString())
+        binding.switchFavorite.isChecked = place.isFavorite
+        photoUris.addAll(place.photoUris)
+        showPhotos()
+    }
+
+    private fun addPhoto(uri: String) {
+        if (uri in photoUris) return
+        if (photoUris.size >= Constants.MAX_PHOTOS_PER_PLACE) {
+            Toast.makeText(
+                this,
+                getString(R.string.msg_max_photos_reached, Constants.MAX_PHOTOS_PER_PLACE),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        photoUris.add(uri)
+        showPhotos()
+    }
+
+    private fun showPhotos() {
+        photoAdapter.submitList(photoUris.toList())
+        binding.rvPhotos.isVisible = photoUris.isNotEmpty()
+        binding.tvNoPhotos.isVisible = photoUris.isEmpty()
+    }
 
     private fun launchCamera() {
         val photosDir = File(cacheDir, "photos").apply { mkdirs() }
@@ -181,61 +175,98 @@ class PlaceFormActivity : AppCompatActivity() {
         cameraUri = uri
         try {
             takePicture.launch(uri)
-        } catch (e: ActivityNotFoundException) {
-            UiMessage(MessageType.ERROR, R.string.msg_camera_unavailable).show(this)
+        } catch (exception: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.msg_camera_unavailable, Toast.LENGTH_SHORT).show()
         }
     }
 
-    // ----------------------------------------------------------------- Render
+    private fun savePlace() {
+        clearErrors()
 
-    private fun render(state: PlaceFormUiState) {
-        binding.toolbar.setTitle(if (state.isEditing) R.string.place_edit else R.string.place_new)
+        val name = binding.etName.text?.toString().orEmpty().trim()
+        val description = binding.etDescription.text?.toString().orEmpty().trim()
+        val categoryIndex = categoryOptions.indexOfFirst {
+            getString(it.labelRes()) == binding.acCategory.text?.toString()
+        }
+        val provinceIndex = provinceOptions.indexOfFirst {
+            getString(it.labelRes()) == binding.acProvince.text?.toString()
+        }
+        val category = categoryOptions.getOrNull(categoryIndex)
+        val province = provinceOptions.getOrNull(provinceIndex)
+        val latitudeText = binding.etLatitude.text?.toString().orEmpty()
+        val longitudeText = binding.etLongitude.text?.toString()
 
-        // Fill the fields only when the text is different (e.g. when the place finishes loading).
-        binding.etName.setTextIfDifferent(state.name)
-        binding.etDescription.setTextIfDifferent(state.description)
-        binding.etLatitude.setTextIfDifferent(state.latitude)
-        binding.etLongitude.setTextIfDifferent(state.longitude)
-        binding.acCategory.setText(state.category?.let { getString(it.labelRes()) }.orEmpty(), false)
-        binding.acProvince.setText(state.province?.let { getString(it.labelRes()) }.orEmpty(), false)
-        if (binding.switchFavorite.isChecked != state.isFavorite) {
-            binding.switchFavorite.isChecked = state.isFavorite
+        binding.tilName.error = Validators.validateName(name)?.let { getString(it.messageRes) }
+        binding.tilDescription.error =
+            Validators.validateDescription(description)?.let { getString(it.messageRes) }
+        binding.tilCategory.error =
+            Validators.validateCategory(category)?.let { getString(it.messageRes) }
+        binding.tilProvince.error =
+            Validators.validateProvince(province)?.let { getString(it.messageRes) }
+        binding.tilLatitude.error =
+            Validators.validateLatitude(latitudeText)?.let { getString(it.messageRes) }
+        binding.tilLongitude.error =
+            Validators.validateLongitude(longitudeText)?.let { getString(it.messageRes) }
+
+        if (hasErrors()) {
+            Toast.makeText(this, R.string.msg_fix_form_errors, Toast.LENGTH_SHORT).show()
+            return
         }
 
-        binding.tilName.error = errorText(state, FormField.NAME)
-        binding.tilDescription.error = errorText(state, FormField.DESCRIPTION)
-        binding.tilCategory.error = errorText(state, FormField.CATEGORY)
-        binding.tilProvince.error = errorText(state, FormField.PROVINCE)
-        binding.tilLatitude.error = errorText(state, FormField.LATITUDE)
-        binding.tilLongitude.error = errorText(state, FormField.LONGITUDE)
+        val previous = originalPlace
+        val place = Place(
+            id = previous?.id ?: 0L,
+            name = name,
+            description = description,
+            category = category!!,
+            province = province!!,
+            latitude = latitudeText.toDouble(),
+            longitude = longitudeText.toDouble(),
+            photoUris = photoUris.toList(),
+            isFavorite = binding.switchFavorite.isChecked,
+            createdAt = previous?.createdAt ?: System.currentTimeMillis()
+        )
 
-        photoAdapter.submitList(state.photoUris)
-        binding.rvPhotos.isVisible = state.photoUris.isNotEmpty()
-        binding.tvNoPhotos.isVisible = state.photoUris.isEmpty()
-
-        state.message?.let {
-            it.show(this)
-            viewModel.onMessageShown()
+        if (previous == null) {
+            repository.addPlace(place)
+            Toast.makeText(this, R.string.msg_place_created, Toast.LENGTH_SHORT).show()
+            finish()
+        } else {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_update_title)
+                .setMessage(getString(R.string.dialog_update_message, place.name))
+                .setNegativeButton(R.string.button_cancel, null)
+                .setPositiveButton(R.string.dialog_confirm) { _, _ ->
+                    repository.updatePlace(place)
+                    Toast.makeText(this, R.string.msg_place_updated, Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                .show()
         }
-        if (state.isSaved) finish()
     }
 
-    private fun errorText(state: PlaceFormUiState, field: FormField): String? =
-        state.errors[field]?.let { getString(it.messageRes) }
-
-    private fun TextInputEditText.setTextIfDifferent(value: String) {
-        if (text?.toString() != value) {
-            setText(value)
-            setSelection(value.length)
-        }
+    private fun clearErrors() {
+        binding.tilName.error = null
+        binding.tilDescription.error = null
+        binding.tilCategory.error = null
+        binding.tilProvince.error = null
+        binding.tilLatitude.error = null
+        binding.tilLongitude.error = null
     }
+
+    private fun hasErrors(): Boolean =
+        binding.tilName.error != null ||
+            binding.tilDescription.error != null ||
+            binding.tilCategory.error != null ||
+            binding.tilProvince.error != null ||
+            binding.tilLatitude.error != null ||
+            binding.tilLongitude.error != null
 
     companion object {
         private const val EXTRA_PLACE_ID = "extra_place_id"
         private const val NO_ID = -1L
         private const val KEY_CAMERA_URI = "key_camera_uri"
 
-        /** Intent to create a place (no id) or edit an existing one. */
         fun newIntent(context: Context, placeId: Long? = null): Intent =
             Intent(context, PlaceFormActivity::class.java).apply {
                 if (placeId != null) putExtra(EXTRA_PLACE_ID, placeId)
