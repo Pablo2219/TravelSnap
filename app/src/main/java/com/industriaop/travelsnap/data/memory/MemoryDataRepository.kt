@@ -15,7 +15,7 @@ import com.industriaop.travelsnap.util.TextUtils
 
 /**
  * Stores the sample places in a mutable list, following the memory manager
- * pattern practiced in class. User settings keep their existing observer for now.
+ * pattern practiced in class. User settings are also stored as simple objects.
  */
 class MemoryDataRepository : PlaceRepository, UserRepository {
 
