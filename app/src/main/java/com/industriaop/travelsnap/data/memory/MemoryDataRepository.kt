@@ -40,9 +40,12 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
 
     override suspend fun getPlaceByIdAsync(id: Long): Place? = getPlaceById(id)
 
-    override fun getPlaces(filter: PlaceFilter): List<Place> {
+    override fun getPlaces(filter: PlaceFilter): List<Place> =
+        applyFilter(places.toList(), filter)
+
+    private fun applyFilter(list: List<Place>, filter: PlaceFilter): List<Place> {
         val query = TextUtils.normalize(filter.query)
-        val filtered = places.toList().filter { place ->
+        val filtered = list.filter { place ->
             (query.isEmpty() || TextUtils.normalize(place.name).contains(query)) &&
                 (filter.category == null || place.category == filter.category) &&
                 (filter.province == null || place.province == filter.province) &&
