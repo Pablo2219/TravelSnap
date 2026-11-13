@@ -1,101 +1,64 @@
-# TravelSnap — Tus lugares, tus momentos
+# TravelSnap
 
-## Descripción del proyecto
+Aplicación para registrar lugares turísticos, consultar sus datos y organizar futuras visitas.
 
-TravelSnap es una aplicación móvil diseñada para registrar, organizar y explorar lugares turísticos y naturales. Permite a los usuarios guardar información de sus destinos favoritos, adjuntar fotografías, aplicar filtros personalizados y visualizar las ubicaciones en un mapa.
+Proyecto individual de Pablo. Esta entrega corresponde al avance hasta la tarea 5.
 
-La aplicación busca facilitar la planificación de visitas a lugares como playas, montañas, volcanes, cascadas y parques naturales.
+## Avance de las tareas
 
-**Tipo de proyecto:** Aplicación móvil Android.
+| Tarea | Implementación |
+| --- | --- |
+| Idea del proyecto | Gestión de lugares turísticos, con fotografías, filtros y mapa previstos para futuras entregas. |
+| Tarea 2 | Modelo Place, enumeraciones de categoría y provincia, IPlaceRepository, MemoryDataRepository, PlaceViewModel y Util. Recursos en español e inglés. |
+| Tarea 4 | Activities y diseños XML para bienvenida, lista, formulario, detalle, mapa, fotografías y perfil. |
+| Tarea 5 | Crear, consultar por identificador, actualizar y eliminar lugares. Confirmación antes de actualizar o eliminar. |
 
-**Modalidad:** Individual.
+## Uso
 
-## Objetivo general
+1. Entrar con Continuar como invitado.
+2. Abrir Gestión de lugares, llenar el identificador y los datos, y pulsar Guardar en la barra superior.
+3. Para editar, escribir un identificador existente y pulsar Buscar por identificador. También se puede abrir un lugar de la lista, entrar al detalle y pulsar Editar.
+4. Al encontrar un lugar se bloquea el identificador. Guardar pide confirmación para actualizar y Eliminar pide confirmación para borrar.
+5. Limpiar vacía los campos y permite crear otro lugar.
 
-Desarrollar una aplicación móvil que permita gestionar lugares turísticos mediante operaciones CRUD, filtros personalizados, acceso a imágenes del dispositivo y visualización de ubicaciones geográficas.
+La lista se actualiza al regresar del formulario. Los identificadores no se repiten. La latitud debe estar entre -90 y 90 y la longitud entre -180 y 180.
 
-## Funcionalidades principales
-
-### 1. Gestión de lugares (CRUD)
-- Crear nuevos lugares turísticos.
-- Consultar la información de cada lugar.
-- Actualizar los datos registrados.
-- Eliminar lugares mediante un diálogo de confirmación.
-
-### 2. Lista y filtros personalizados
-- Buscar lugares por nombre.
-- Filtrar por categoría y ubicación.
-- Filtrar por provincia.
-- Mostrar lugares favoritos.
-- Ordenar los resultados por nombre.
-
-### 3. Cámara y galería
-- Seleccionar imágenes desde la galería.
-- Capturar fotografías cuando el dispositivo y los permisos lo permitan.
-- Asociar imágenes con cada lugar turístico.
-
-### 4. Diálogos
-- Confirmar la eliminación de un lugar.
-- Mostrar mensajes de éxito o error.
-- Validar formularios y campos obligatorios.
-
-### 5. Mapa
-- Visualizar los lugares registrados en un mapa.
-- Mostrar marcadores para las ubicaciones.
-- Consultar el nombre y los detalles de un lugar al seleccionar su marcador.
-
-## Mockups de la aplicación
-
-Los mockups representan una propuesta inicial de diseño de las pantallas de TravelSnap. Se utilizarán como referencia durante el desarrollo.
-
-![Mockups de TravelSnap](docs/mockups.png)
-
-### Pantallas propuestas
-1. Inicio de sesión o pantalla de bienvenida.
-2. Listado de lugares con buscador y filtros.
-3. Formulario para crear o editar un lugar.
-4. Detalle de un lugar turístico.
-5. Selección de fotografías desde cámara o galería.
-6. Mapa con marcadores.
-7. Diálogo de confirmación para eliminar.
-8. Perfil y configuración.
-
-## Tecnologías propuestas
-
-- Kotlin.
-- Android Studio.
-- Jetpack Compose.
-- Room para almacenamiento local.
-- Google Maps SDK para el mapa.
-- Android Photo Picker para seleccionar imágenes.
-
-## Estructura inicial del proyecto
+## Estructura
 
 ```text
-TravelSnap/
-├── app/
-├── docs/
-│   └── mockups.png
-├── README.md
-└── .gitignore
+app/src/main/java/com/industriaop/travelsnap/
+    domain/model/          Place, PlaceCategory, Province
+    domain/repository/     IPlaceRepository
+    data/memory/           MemoryDataRepository
+    viewmodel/             PlaceViewModel
+    util/                  Util
+    Activities y adaptador de la lista
 ```
 
-La estructura definitiva podrá cambiar conforme avance el desarrollo.
+El código sigue la estructura de TaskManager de la semana 7: Activities con XML y findViewById, navegación con Intent, Spinner, RecyclerView, AlertDialog y un ViewModel con métodos en companion object. El repositorio usa una lista mutable en memoria.
 
-## Plan de trabajo semanal
+No se usa Flow, corrutinas, ViewBinding, fábricas de ViewModel, Compose, Room ni Glide. Los datos se pierden al cerrar el proceso de la aplicación. El idioma depende del idioma del dispositivo: español por defecto e inglés mediante values-en.
 
-- **Semana 1:** Crear el repositorio, documentar la idea y definir los mockups.
-- **Semana 2:** Crear las pantallas principales y la navegación.
-- **Semana 3:** Implementar el CRUD y el almacenamiento local.
-- **Semana 4:** Implementar búsqueda y filtros personalizados.
-- **Semana 5:** Integrar cámara o galería y diálogos.
-- **Semana 6:** Integrar el mapa, realizar pruebas y mejorar la experiencia de usuario.
+## Pantallas pendientes de funcionalidad
 
+Mapa, fotografías y perfil tienen su pantalla y navegación. La integración del mapa, cámara, galería, filtros y cuentas de usuario queda pendiente para las tareas que soliciten esas funciones. Los controles correspondientes no realizan operaciones todavía.
 
-## Flujo de trabajo con GitHub
+## Mockups iniciales
 
-Los cambios se desarrollarán en ramas independientes. Cada avance se enviará mediante un Pull Request hacia `main` y deberá recibir la revisión requerida antes de integrarse.
+![Propuesta inicial de pantallas](docs/mockups.png)
 
-## Estado del proyecto
+Los mockups muestran la idea completa del proyecto. Las tecnologías sugeridas dentro de esa imagen no corresponden a esta implementación: este avance usa Kotlin y layouts XML. El diseño actual utiliza los controles básicos trabajados en clase.
 
-En planificación y diseño inicial.
+## Ejecutar
+
+Abrir la carpeta del repositorio en Android Studio, sincronizar Gradle y ejecutar app en un dispositivo o emulador con Android 13 o superior. Se conserva la configuración de SDK 37 y Gradle del proyecto.
+
+Para compilar y ejecutar las pruebas unitarias en Windows:
+
+```text
+gradlew.bat assembleDebug testDebugUnitTest
+```
+
+## Entrega
+
+Los cambios se entregan mediante una rama y un PR hacia main. La integración a main queda pendiente de la revisión del profesor ebarahonautn.
