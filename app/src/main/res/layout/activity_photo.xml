@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/main" android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="vertical">
+        <TextView android:id="@+id/tvTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" android:text="@string/photos_title" android:textSize="26sp"/>
+        <Button android:id="@+id/btnCamera" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/camera" android:enabled="false"/>
+        <Button android:id="@+id/btnGallery" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/gallery" android:enabled="false"/>
+        <TextView android:id="@+id/tvPhoto" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" android:text="@string/photos_pending" android:textSize="18sp"/>
+        <Button android:id="@+id/btnBack" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/back" android:enabled="true"/>
+    </LinearLayout>
+</ScrollView>
