@@ -1,42 +1,27 @@
 package com.industriaop.travelsnap.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import com.industriaop.travelsnap.TravelSnapApp
 import com.industriaop.travelsnap.domain.model.AppLanguage
-import com.industriaop.travelsnap.domain.model.User
-import com.industriaop.travelsnap.domain.model.UserSettings
-import com.industriaop.travelsnap.domain.repository.UserRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
-data class SettingsUiState(
-    val user: User? = null,
-    val settings: UserSettings = UserSettings()
-)
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+    private val app = application as TravelSnapApp
+    private val repository = app.repository
 
-/** Backs the "Profile and settings" screen. */
-class SettingsViewModel(
-    private val repository: UserRepository
-) : ViewModel() {
+    fun getCurrentUser() = repository.getCurrentUser()
 
-    val uiState: StateFlow<SettingsUiState> = combine(
-        repository.observeCurrentUser(), repository.observeSettings()
-    ) { user, settings ->
-        SettingsUiState(user, settings)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
+    fun getSettings() = repository.getSettings()
 
-    fun onLanguageSelected(language: AppLanguage) {
-        viewModelScope.launch { repository.setLanguage(language) }
+    fun setLanguage(language: AppLanguage) {
+        repository.setLanguage(language)
+        app.applySettings()
     }
 
-    fun onDarkThemeChange(enabled: Boolean) {
-        viewModelScope.launch { repository.setDarkTheme(enabled) }
+    fun setDarkTheme(enabled: Boolean) {
+        repository.setDarkTheme(enabled)
+        app.applySettings()
     }
 
-    fun onLogout() {
-        viewModelScope.launch { repository.logout() }
-    }
+    fun logout() = repository.logout()
 }

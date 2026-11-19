@@ -20,7 +20,8 @@ Desarrollar una aplicación móvil que permita gestionar lugares turísticos med
 - Crear nuevos lugares turísticos.
 - Consultar la información de cada lugar.
 - Actualizar los datos registrados.
-- Eliminar lugares mediante un diálogo de confirmación.
+- Buscar un lugar por ID desde el formulario y cargarlo en modo edición.
+- Confirmar los cambios antes de actualizar o eliminar un lugar.
 
 ### 2. Lista y filtros personalizados
 - Buscar lugares por nombre.
@@ -39,10 +40,9 @@ Desarrollar una aplicación móvil que permita gestionar lugares turísticos med
 - Mostrar mensajes de éxito o error.
 - Validar formularios y campos obligatorios.
 
-### 5. Mapa
-- Visualizar los lugares registrados en un mapa.
-- Mostrar marcadores para las ubicaciones.
-- Consultar el nombre y los detalles de un lugar al seleccionar su marcador.
+### 5. Vista de ubicaciones
+- Seleccionar marcadores en la vista local de ubicaciones.
+- Consultar las coordenadas y abrir el detalle del lugar seleccionado.
 
 ## Mockups de la aplicación
 
@@ -60,14 +60,12 @@ Los mockups representan una propuesta inicial de diseño de las pantallas de Tra
 7. Diálogo de confirmación para eliminar.
 8. Perfil y configuración.
 
-## Tecnologías propuestas
+## Código utilizado en la entrega
 
-- Kotlin.
-- Android Studio.
-- Jetpack Compose.
-- Room para almacenamiento local.
-- Google Maps SDK para el mapa.
-- Android Photo Picker para seleccionar imágenes.
+- Kotlin, pantallas XML, `findViewById` e `Intent` para la navegación, como en los ejemplos del curso.
+- Modelos, interfaces de repositorio y ViewModels de la Tarea 2. Los lugares se guardan en una lista en memoria, como en el ejemplo de Semana 7.
+- `RecyclerView.Adapter`, búsqueda por identificador y `AlertDialog` para las confirmaciones de la Tarea 5.
+- Recursos en español e inglés. Las pantallas de la Tarea 4 conservan los controles para filtrar lugares, adjuntar imágenes y configurar el perfil.
 
 ## Estructura inicial del proyecto
 
@@ -94,8 +92,10 @@ La estructura definitiva podrá cambiar conforme avance el desarrollo.
 
 ## Flujo de trabajo con GitHub
 
-Los cambios se desarrollarán en ramas independientes. Cada avance se enviará mediante un Pull Request hacia `main` y deberá recibir la revisión requerida antes de integrarse.
+El proyecto es individual. Los cambios se publican en `Dev` y se revisan mediante un Pull Request hacia `main`. La integración queda pendiente de la aprobación de `ebarahonautn`.
 
 ## Estado del proyecto
 
-En planificación y diseño inicial.
+Para probar el CRUD, inicia sesión con la cuenta de demostración que muestra la app. Pulsa **+** en **Mis lugares**. Desde el formulario puedes registrar un lugar o escribir el ID de uno existente y pulsar la lupa. El ID de cada lugar aparece en su pantalla de detalle.
+
+Los cambios en los lugares duran mientras se ejecuta la aplicación. La vista de ubicaciones muestra marcadores y coordenadas de los lugares guardados. La integración de un proveedor de mapas queda para una entrega posterior.

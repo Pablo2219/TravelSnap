@@ -33,6 +33,9 @@
     <string name="no_results">No places match your filters.</string>
 
     <!-- Place form and detail -->
+    <string name="place_search_id_hint">Find place by ID</string>
+    <string name="place_search_id_action">Search</string>
+    <string name="place_id_label">Place ID: %1$d</string>
     <string name="place_new">New place</string>
     <string name="place_edit">Edit place</string>
     <string name="place_detail">Place details</string>
@@ -76,6 +79,8 @@
     <string name="province_limon">Limón</string>
 
     <!-- Dialogs -->
+    <string name="dialog_update_title">Update place</string>
+    <string name="dialog_update_message">Save the changes to \"%1$s\"?</string>
     <string name="dialog_delete_title">Delete place</string>
     <string name="dialog_delete_message">Are you sure you want to delete \"%1$s\"? This action cannot be undone.</string>
     <string name="dialog_confirm">Confirm</string>
@@ -92,6 +97,7 @@
     <string name="msg_max_photos_reached">You can add up to %1$d photos per place.</string>
 
     <!-- Validation errors -->
+    <string name="error_place_id_invalid">Enter a valid place ID.</string>
     <string name="error_name_required">The name is required.</string>
     <string name="error_name_too_short">The name must have at least 3 characters.</string>
     <string name="error_name_too_long">The name must have at most 60 characters.</string>
