@@ -2,84 +2,95 @@ package com.industriaop.travelsnap.ui.profile
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.industriaop.travelsnap.R
-import com.industriaop.travelsnap.TravelSnapApp
-import com.industriaop.travelsnap.databinding.ActivityProfileBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.industriaop.travelsnap.domain.model.AppLanguage
-import com.industriaop.travelsnap.ui.common.BottomNav
+import com.industriaop.travelsnap.R
 import com.industriaop.travelsnap.ui.common.applySystemBarsPadding
+import com.industriaop.travelsnap.ui.common.BottomNav
 import com.industriaop.travelsnap.ui.login.LoginActivity
-import com.industriaop.travelsnap.viewmodel.SettingsUiState
 import com.industriaop.travelsnap.viewmodel.SettingsViewModel
-import com.industriaop.travelsnap.viewmodel.ViewModelFactories
-import kotlinx.coroutines.launch
 
-/**
- * Profile and settings screen (mockup 8): user card, language, dark theme and sign out.
- * The language and theme are applied for the whole app by [TravelSnapApp].
- */
+/** Profile and application settings screen. */
 class ProfileActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityProfileBinding
-
-    private val viewModel: SettingsViewModel by viewModels {
-        ViewModelFactories.settings((application as TravelSnapApp).repository)
-    }
-
-    /** True while the screen is copying the ViewModel state into the views (ignore listeners). */
+    private lateinit var bottomNav: BottomNavigationView
+    private lateinit var btnLogout: MaterialButton
+    private lateinit var switchDark: MaterialSwitch
+    private lateinit var toggleLanguage: MaterialButtonToggleGroup
+    private lateinit var tvAvatar: TextView
+    private lateinit var tvUserEmail: TextView
+    private lateinit var tvUserName: TextView
+    private val viewModel: SettingsViewModel by viewModels()
     private var isRendering = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding = ActivityProfileBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.root.applySystemBarsPadding()
+        setContentView(R.layout.activity_profile)
+        findViewById<View>(R.id.root).applySystemBarsPadding()
 
-        BottomNav.setup(this, binding.bottomNav, R.id.nav_profile)
+        bottomNav = findViewById(R.id.bottomNav)
+        btnLogout = findViewById(R.id.btnLogout)
+        switchDark = findViewById(R.id.switchDark)
+        toggleLanguage = findViewById(R.id.toggleLanguage)
+        tvAvatar = findViewById(R.id.tvAvatar)
+        tvUserEmail = findViewById(R.id.tvUserEmail)
+        tvUserName = findViewById(R.id.tvUserName)
+        BottomNav.setup(this, bottomNav, R.id.nav_profile)
 
-        binding.toggleLanguage.addOnButtonCheckedListener { _, checkedId, isChecked ->
+        toggleLanguage.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked && !isRendering) {
-                val language = if (checkedId == R.id.btnSpanish) AppLanguage.SPANISH else AppLanguage.ENGLISH
-                viewModel.onLanguageSelected(language)
+                val language = if (checkedId == R.id.btnSpanish) {
+                    AppLanguage.SPANISH
+                } else {
+                    AppLanguage.ENGLISH
+                }
+                viewModel.setLanguage(language)
+
             }
         }
-        binding.switchDark.setOnCheckedChangeListener { _, checked ->
-            if (!isRendering) viewModel.onDarkThemeChange(checked)
+
+        switchDark.setOnCheckedChangeListener { _, checked ->
+            if (!isRendering) {
+                viewModel.setDarkTheme(checked)
+
+            }
         }
-        binding.btnLogout.setOnClickListener {
-            viewModel.onLogout()
+
+        btnLogout.setOnClickListener {
+            viewModel.logout()
             val intent = Intent(this, LoginActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             startActivity(intent)
         }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { render(it) }
-            }
-        }
+        renderProfile()
     }
 
-    private fun render(state: SettingsUiState) {
+    override fun onResume() {
+        super.onResume()
+        if (::bottomNav.isInitialized) renderProfile()
+    }
+
+    private fun renderProfile() {
         isRendering = true
+        val user = viewModel.getCurrentUser()
+        val settings = viewModel.getSettings()
 
-        val user = state.user
-        binding.tvUserName.text = user?.name.orEmpty()
-        binding.tvUserEmail.text = user?.email.orEmpty()
-        binding.tvAvatar.text = user?.name?.firstOrNull()?.uppercase().orEmpty()
-
-        binding.toggleLanguage.check(
-            if (state.settings.language == AppLanguage.SPANISH) R.id.btnSpanish else R.id.btnEnglish
+        tvUserName.text = user?.name.orEmpty()
+        tvUserEmail.text = user?.email.orEmpty()
+        tvAvatar.text = user?.name?.firstOrNull()?.uppercase().orEmpty()
+        toggleLanguage.check(
+            if (settings.language == AppLanguage.SPANISH) R.id.btnSpanish else R.id.btnEnglish
         )
-        binding.switchDark.isChecked = state.settings.darkTheme
-
+        switchDark.isChecked = settings.darkTheme
         isRendering = false
     }
 }

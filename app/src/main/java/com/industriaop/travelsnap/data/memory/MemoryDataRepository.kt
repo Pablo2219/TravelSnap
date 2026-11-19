@@ -1,4 +1,5 @@
 package com.industriaop.travelsnap.data.memory
+
 import com.industriaop.travelsnap.domain.model.AppLanguage
 import com.industriaop.travelsnap.domain.model.Place
 import com.industriaop.travelsnap.domain.model.PlaceCategory
@@ -11,57 +12,28 @@ import com.industriaop.travelsnap.domain.repository.PlaceRepository
 import com.industriaop.travelsnap.domain.repository.UserRepository
 import com.industriaop.travelsnap.util.Constants
 import com.industriaop.travelsnap.util.TextUtils
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 
+/**
+ * Stores the sample places in a mutable list, following the memory manager
+ * pattern practiced in class. User settings are also stored as simple objects.
+ */
 class MemoryDataRepository : PlaceRepository, UserRepository {
 
-    private val places = MutableStateFlow(seedPlaces())
-    private var nextId: Long = (places.value.maxOfOrNull { it.id } ?: 0L) + 1L
+    private val places = mutableListOf<Place>().apply { addAll(seedPlaces()) }
+    private var nextId: Long = (places.maxOfOrNull { it.id } ?: 0L) + 1L
 
-    private val currentUser = MutableStateFlow<User?>(null)
-    private val settings = MutableStateFlow(UserSettings())
+    private var currentUser: User? = null
+    private var settings = UserSettings()
 
-    // ---------------------------------------------------------------- Places
+    // Places: simple in-memory CRUD operations
 
-    override fun observePlaces(filter: PlaceFilter): Flow<List<Place>> =
-        places.map { list -> applyFilter(list, filter) }
-
-    override fun observePlace(id: Long): Flow<Place?> =
-        places.map { list -> list.firstOrNull { it.id == id } }
-
-    override suspend fun getPlaceById(id: Long): Place? =
-        places.value.firstOrNull { it.id == id }
-
-    override suspend fun addPlace(place: Place): Long {
-        val id = synchronized(this) { nextId++ }
-        places.update { it + place.copy(id = id) }
-        return id
-    }
-
-    override suspend fun updatePlace(place: Place) {
-        places.update { list -> list.map { if (it.id == place.id) place else it } }
-    }
-
-    override suspend fun deletePlace(id: Long) {
-        places.update { list -> list.filterNot { it.id == id } }
-    }
-
-    override suspend fun toggleFavorite(id: Long) {
-        places.update { list ->
-            list.map { if (it.id == id) it.copy(isFavorite = !it.isFavorite) else it }
-        }
-    }
-
-    private fun applyFilter(list: List<Place>, filter: PlaceFilter): List<Place> {
+    override fun getPlaces(filter: PlaceFilter): List<Place> {
         val query = TextUtils.normalize(filter.query)
-        val filtered = list.filter { place ->
+        val filtered = places.filter { place ->
             (query.isEmpty() || TextUtils.normalize(place.name).contains(query)) &&
-                    (filter.category == null || place.category == filter.category) &&
-                    (filter.province == null || place.province == filter.province) &&
-                    (!filter.onlyFavorites || place.isFavorite)
+                (filter.category == null || place.category == filter.category) &&
+                (filter.province == null || place.province == filter.province) &&
+                (!filter.onlyFavorites || place.isFavorite)
         }
         val byName = compareBy<Place> { TextUtils.normalize(it.name) }
         return when (filter.sortOrder) {
@@ -70,36 +42,65 @@ class MemoryDataRepository : PlaceRepository, UserRepository {
         }
     }
 
-    // ----------------------------------------------------------------- Users
+    override fun getPlaceById(id: Long): Place? =
+        places.firstOrNull { it.id == id }
 
-    override fun observeCurrentUser(): Flow<User?> = currentUser
+    override fun addPlace(place: Place): Long {
+        val id = nextId++
+        places.add(place.copy(id = id))
+        return id
+    }
 
-    override fun observeSettings(): Flow<UserSettings> = settings
+    override fun updatePlace(place: Place) {
+        val index = places.indexOfFirst { it.id == place.id }
+        if (index >= 0) places[index] = place
+    }
 
-    override suspend fun login(email: String, password: String): User? {
-        val valid = email.trim().equals(Constants.DEMO_EMAIL, ignoreCase = true) &&
-                password == Constants.DEMO_PASSWORD
-        return if (valid) {
-            User(id = 1L, name = Constants.DEMO_NAME, email = Constants.DEMO_EMAIL)
-                .also { currentUser.value = it }
-        } else {
-            null
+    override fun deletePlace(id: Long) {
+        places.removeAll { it.id == id }
+    }
+
+    override fun toggleFavorite(id: Long) {
+        val index = places.indexOfFirst { it.id == id }
+        if (index >= 0) {
+            val place = places[index]
+            places[index] = place.copy(isFavorite = !place.isFavorite)
         }
     }
 
-    override suspend fun logout() {
-        currentUser.value = null
+    // User settings and demo login
+
+    override fun getCurrentUser(): User? = currentUser
+
+    override fun getSettings(): UserSettings = settings
+
+    override fun login(email: String, password: String): User? {
+        val valid = email.trim().equals(Constants.DEMO_EMAIL, ignoreCase = true) &&
+            password == Constants.DEMO_PASSWORD
+        if (!valid) return null
+
+        val user = User(
+            id = 1L,
+            name = Constants.DEMO_NAME,
+            email = Constants.DEMO_EMAIL
+        )
+        currentUser = user
+        return user
     }
 
-    override suspend fun setLanguage(language: AppLanguage) {
-        settings.update { it.copy(language = language) }
+    override fun logout() {
+        currentUser = null
     }
 
-    override suspend fun setDarkTheme(enabled: Boolean) {
-        settings.update { it.copy(darkTheme = enabled) }
+    override fun setLanguage(language: AppLanguage) {
+        settings = settings.copy(language = language)
     }
 
-    // ------------------------------------------------------------- Seed data
+    override fun setDarkTheme(enabled: Boolean) {
+        settings = settings.copy(darkTheme = enabled)
+    }
+
+    // Initial sample data
 
     private fun seedPlaces(): List<Place> = listOf(
         Place(
