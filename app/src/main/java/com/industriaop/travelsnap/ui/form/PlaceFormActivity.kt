@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
@@ -27,10 +28,12 @@ import com.industriaop.travelsnap.ui.adapter.PhotoAdapter
 import com.industriaop.travelsnap.ui.common.applySystemBarsPadding
 import com.industriaop.travelsnap.ui.common.show
 import com.industriaop.travelsnap.ui.dialog.AddPhotoBottomSheet
+import com.industriaop.travelsnap.ui.dialog.DeleteConfirmDialog
 import com.industriaop.travelsnap.util.MessageType
 import com.industriaop.travelsnap.util.UiMessage
 import com.industriaop.travelsnap.util.labelRes
 import com.industriaop.travelsnap.viewmodel.FormField
+import com.industriaop.travelsnap.viewmodel.PlaceConfirmation
 import com.industriaop.travelsnap.viewmodel.PlaceFormUiState
 import com.industriaop.travelsnap.viewmodel.PlaceFormViewModel
 import com.industriaop.travelsnap.viewmodel.ViewModelFactories
@@ -43,6 +46,8 @@ class PlaceFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPlaceFormBinding
     private lateinit var photoAdapter: PhotoAdapter
     private var addPhotoSheet: AddPhotoBottomSheet? = null
+    private var updateDialog: AlertDialog? = null
+    private var deleteDialog: DeleteConfirmDialog? = null
 
     private val placeId: Long? by lazy {
         intent.getLongExtra(EXTRA_PLACE_ID, NO_ID).takeIf { it != NO_ID }
@@ -79,7 +84,10 @@ class PlaceFormActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
         setupPhotos()
         setupFields()
-        binding.btnSave.setOnClickListener { viewModel.onSave() }
+        binding.btnSearchPlace.setOnClickListener { searchPlace() }
+        binding.etSearchPlaceId.doOnTextChanged { _, _, _, _ -> binding.tilSearchPlaceId.error = null }
+        binding.btnSave.setOnClickListener { viewModel.onSaveRequested() }
+        binding.btnDeletePlace.setOnClickListener { viewModel.onDeleteRequested() }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -97,6 +105,16 @@ class PlaceFormActivity : AppCompatActivity() {
         super.onStop()
         addPhotoSheet?.dismiss()
         addPhotoSheet = null
+        dismissConfirmationDialogs()
+    }
+
+    private fun searchPlace() {
+        val id = binding.etSearchPlaceId.text.toString().trim().toLongOrNull()
+        if (id == null || id <= 0L) {
+            binding.tilSearchPlaceId.error = getString(R.string.error_place_id_invalid)
+            return
+        }
+        viewModel.onSearch(id)
     }
 
     // ------------------------------------------------------------------ Setup
@@ -173,7 +191,16 @@ class PlaceFormActivity : AppCompatActivity() {
     // ----------------------------------------------------------------- Render
 
     private fun render(state: PlaceFormUiState) {
-        binding.toolbar.setTitle(if (state.isEditing) R.string.place_edit else R.string.place_new)
+        val place = state.editingPlace
+        binding.toolbar.setTitle(if (place == null) R.string.place_new else R.string.place_edit)
+        binding.tvEditingPlaceId.isVisible = place != null
+        if (place != null) {
+            binding.tvEditingPlaceId.text = getString(R.string.place_id_label, place.id)
+        }
+        binding.btnSearchPlace.isEnabled = !state.isBusy
+        binding.btnSave.isEnabled = !state.isBusy
+        binding.btnDeletePlace.isVisible = place != null
+        binding.btnDeletePlace.isEnabled = !state.isBusy
 
         // Fill the fields only when the text is different (e.g. when the place finishes loading).
         binding.etName.setTextIfDifferent(state.name)
@@ -197,11 +224,43 @@ class PlaceFormActivity : AppCompatActivity() {
         binding.rvPhotos.isVisible = state.photoUris.isNotEmpty()
         binding.tvNoPhotos.isVisible = state.photoUris.isEmpty()
 
+        renderConfirmation(state)
         state.message?.let {
             it.show(this)
             viewModel.onMessageShown()
         }
-        if (state.isSaved) finish()
+        if (state.isFinished) finish()
+    }
+
+    private fun renderConfirmation(state: PlaceFormUiState) {
+        val place = state.editingPlace ?: return
+        when (state.confirmation) {
+            PlaceConfirmation.UPDATE -> if (updateDialog == null) {
+                updateDialog = AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_update_title)
+                    .setMessage(getString(R.string.dialog_update_message, place.name))
+                    .setPositiveButton(R.string.button_save) { _, _ -> viewModel.onUpdateConfirmed() }
+                    .setNegativeButton(R.string.button_cancel) { _, _ -> viewModel.onConfirmationCancelled() }
+                    .setOnCancelListener { viewModel.onConfirmationCancelled() }
+                    .show()
+            }
+            PlaceConfirmation.DELETE -> if (deleteDialog == null) {
+                deleteDialog = DeleteConfirmDialog(
+                    context = this,
+                    placeName = place.name,
+                    onConfirm = { viewModel.onDeleteConfirmed() },
+                    onCancel = { viewModel.onConfirmationCancelled() }
+                ).also { it.show() }
+            }
+            null -> dismissConfirmationDialogs()
+        }
+    }
+
+    private fun dismissConfirmationDialogs() {
+        updateDialog?.dismiss()
+        updateDialog = null
+        deleteDialog?.dismiss()
+        deleteDialog = null
     }
 
     private fun errorText(state: PlaceFormUiState, field: FormField): String? =

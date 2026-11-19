@@ -80,23 +80,23 @@ class PlaceDetailActivity : AppCompatActivity() {
 
     private fun render(state: PlaceDetailUiState) {
         val place = state.place
-        if (place != null) {
-            hasShownPlace = true
-            bindPlace(place)
-        } else if (!state.isLoading && !hasShownPlace) {
-            // The id does not exist.
-            UiMessage(MessageType.ERROR, R.string.msg_place_not_found).show(this)
-            finish()
-            return
-        }
-
-        renderDeleteDialog(state, place)
-
         state.message?.let {
             it.show(this)
             viewModel.onMessageShown()
         }
-        if (state.isDeleted) finish()
+        if (state.isDeleted || (!state.isLoading && place == null)) {
+            if (!state.isDeleted && !hasShownPlace) {
+                UiMessage(MessageType.ERROR, R.string.msg_place_not_found).show(this)
+            }
+            finish()
+            return
+        }
+
+        if (place != null) {
+            hasShownPlace = true
+            bindPlace(place)
+        }
+        renderDeleteDialog(state, place)
     }
 
     private fun bindPlace(place: Place) {
@@ -105,6 +105,7 @@ class PlaceDetailActivity : AppCompatActivity() {
         binding.imgCover.loadPhoto(place.photoUris.firstOrNull())
         binding.tvName.text = place.name
         binding.tvProvince.text = getString(place.province.labelRes())
+        binding.tvPlaceId.text = getString(R.string.place_id_label, place.id)
         binding.tvDate.text = getString(R.string.detail_added_on, place.createdAt.toDisplayDate())
         binding.chipCategory.text = getString(place.category.labelRes())
         binding.tvDescription.text = place.description

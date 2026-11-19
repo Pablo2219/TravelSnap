@@ -20,6 +20,8 @@ import kotlinx.coroutines.launch
 
 enum class FormField { NAME, DESCRIPTION, CATEGORY, PROVINCE, LATITUDE, LONGITUDE }
 
+enum class PlaceConfirmation { UPDATE, DELETE }
+
 data class PlaceFormUiState(
     val name: String = "",
     val description: String = "",
@@ -30,8 +32,10 @@ data class PlaceFormUiState(
     val photoUris: List<String> = emptyList(),
     val isFavorite: Boolean = false,
     val errors: Map<FormField, ValidationError> = emptyMap(),
-    val isEditing: Boolean = false,
-    val isSaved: Boolean = false,
+    val editingPlace: Place? = null,
+    val confirmation: PlaceConfirmation? = null,
+    val isBusy: Boolean = false,
+    val isFinished: Boolean = false,
     val message: UiMessage? = null
 )
 
@@ -40,39 +44,54 @@ data class PlaceFormUiState(
  */
 class PlaceFormViewModel(
     private val repository: PlaceRepository,
-    private val placeId: Long? = null
+    placeId: Long? = null
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(PlaceFormUiState(isEditing = placeId != null))
+    private val _uiState = MutableStateFlow(PlaceFormUiState())
     val uiState: StateFlow<PlaceFormUiState> = _uiState.asStateFlow()
 
-    private var createdAt: Long = System.currentTimeMillis()
-
     init {
-        if (placeId != null) loadPlace(placeId)
+        if (placeId != null) loadPlace(placeId, closeIfMissing = true)
     }
 
-    private fun loadPlace(id: Long) {
+    fun onSearch(id: Long) {
+        if (canAct()) loadPlace(id)
+    }
+
+    private fun loadPlace(id: Long, closeIfMissing: Boolean = false) {
+        _uiState.update { it.copy(isBusy = true) }
         viewModelScope.launch {
-            val place = repository.getPlaceById(id)
-            if (place == null) {
-                _uiState.update {
-                    it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_place_not_found))
+            try {
+                val place = repository.getPlaceById(id)
+                if (place == null) {
+                    _uiState.update {
+                        it.copy(
+                            isFinished = closeIfMissing,
+                            message = UiMessage(MessageType.ERROR, R.string.msg_place_not_found)
+                        )
+                    }
+                } else {
+                    _uiState.value = PlaceFormUiState(
+                        name = place.name,
+                        description = place.description,
+                        category = place.category,
+                        province = place.province,
+                        latitude = place.latitude.toString(),
+                        longitude = place.longitude.toString(),
+                        photoUris = place.photoUris,
+                        isFavorite = place.isFavorite,
+                        editingPlace = place
+                    )
                 }
-                return@launch
-            }
-            createdAt = place.createdAt
-            _uiState.update {
-                it.copy(
-                    name = place.name,
-                    description = place.description,
-                    category = place.category,
-                    province = place.province,
-                    latitude = place.latitude.toString(),
-                    longitude = place.longitude.toString(),
-                    photoUris = place.photoUris,
-                    isFavorite = place.isFavorite
-                )
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isFinished = closeIfMissing,
+                        message = UiMessage(MessageType.ERROR, R.string.msg_generic_error)
+                    )
+                }
+            } finally {
+                _uiState.update { it.copy(isBusy = false) }
             }
         }
     }
@@ -130,7 +149,9 @@ class PlaceFormViewModel(
 
     // ------------------------------------------------------------------- Save
 
-    fun onSave() {
+    fun onSaveRequested() {
+        if (!canAct()) return
+
         val state = _uiState.value
         val errors = validate(state)
         if (errors.isNotEmpty()) {
@@ -143,8 +164,22 @@ class PlaceFormViewModel(
             return
         }
 
+        if (state.editingPlace == null) {
+            savePlace(state)
+        } else {
+            _uiState.update { it.copy(confirmation = PlaceConfirmation.UPDATE) }
+        }
+    }
+
+    fun onUpdateConfirmed() {
+        val state = _uiState.value
+        if (state.confirmation == PlaceConfirmation.UPDATE) savePlace(state)
+    }
+
+    private fun savePlace(state: PlaceFormUiState) {
+        val editingPlace = state.editingPlace
         val place = Place(
-            id = placeId ?: 0L,
+            id = editingPlace?.id ?: 0L,
             name = state.name.trim(),
             description = state.description.trim(),
             category = state.category!!,
@@ -153,23 +188,68 @@ class PlaceFormViewModel(
             longitude = state.longitude.trim().toDouble(),
             photoUris = state.photoUris,
             isFavorite = state.isFavorite,
-            createdAt = createdAt
+            createdAt = editingPlace?.createdAt ?: System.currentTimeMillis()
         )
 
+        _uiState.update { it.copy(confirmation = null, isBusy = true) }
         viewModelScope.launch {
             try {
-                if (placeId == null) repository.addPlace(place) else repository.updatePlace(place)
-                val successRes =
-                    if (placeId == null) R.string.msg_place_created else R.string.msg_place_updated
+                val successRes = if (editingPlace == null) {
+                    repository.addPlace(place)
+                    R.string.msg_place_created
+                } else {
+                    repository.updatePlace(place)
+                    R.string.msg_place_updated
+                }
                 _uiState.update {
-                    it.copy(isSaved = true, message = UiMessage(MessageType.SUCCESS, successRes))
+                    it.copy(isFinished = true, message = UiMessage(MessageType.SUCCESS, successRes))
                 }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_generic_error))
                 }
+            } finally {
+                _uiState.update { it.copy(isBusy = false) }
             }
         }
+    }
+
+    fun onDeleteRequested() {
+        if (canAct() && _uiState.value.editingPlace != null) {
+            _uiState.update { it.copy(confirmation = PlaceConfirmation.DELETE) }
+        }
+    }
+
+    fun onConfirmationCancelled() = _uiState.update { it.copy(confirmation = null) }
+
+    fun onDeleteConfirmed() {
+        val state = _uiState.value
+        val place = state.editingPlace ?: return
+        if (state.confirmation != PlaceConfirmation.DELETE) return
+
+        _uiState.update { it.copy(confirmation = null, isBusy = true) }
+        viewModelScope.launch {
+            try {
+                repository.deletePlace(place.id)
+                _uiState.update {
+                    it.copy(
+                        isFinished = true,
+                        message = UiMessage(MessageType.SUCCESS, R.string.msg_place_deleted)
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(message = UiMessage(MessageType.ERROR, R.string.msg_generic_error))
+                }
+            } finally {
+                _uiState.update { it.copy(isBusy = false) }
+            }
+        }
+    }
+
+    private fun canAct(): Boolean {
+        val state = _uiState.value
+        return !state.isBusy && !state.isFinished && state.confirmation == null
     }
 
     private fun validate(state: PlaceFormUiState): Map<FormField, ValidationError> = buildMap {

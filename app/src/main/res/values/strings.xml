@@ -33,6 +33,9 @@
     <string name="no_results">Ningún lugar coincide con los filtros.</string>
 
     <!-- Place form and detail -->
+    <string name="place_search_id_hint">Buscar lugar por ID</string>
+    <string name="place_search_id_action">Buscar</string>
+    <string name="place_id_label">ID del lugar: %1$d</string>
     <string name="place_new">Nuevo lugar</string>
     <string name="place_edit">Editar lugar</string>
     <string name="place_detail">Detalle del lugar</string>
@@ -76,6 +79,8 @@
     <string name="province_limon">Limón</string>
 
     <!-- Dialogs -->
+    <string name="dialog_update_title">Actualizar lugar</string>
+    <string name="dialog_update_message">¿Deseas guardar los cambios de \"%1$s\"?</string>
     <string name="dialog_delete_title">Eliminar lugar</string>
     <string name="dialog_delete_message">¿Seguro que deseas eliminar \"%1$s\"? Esta acción no se puede deshacer.</string>
     <string name="dialog_confirm">Confirmar</string>
@@ -92,6 +97,7 @@
     <string name="msg_max_photos_reached">Puedes agregar hasta %1$d fotos por lugar.</string>
 
     <!-- Validation errors -->
+    <string name="error_place_id_invalid">Ingresa un ID de lugar válido.</string>
     <string name="error_name_required">El nombre es obligatorio.</string>
     <string name="error_name_too_short">El nombre debe tener al menos 3 caracteres.</string>
     <string name="error_name_too_long">El nombre debe tener como máximo 60 caracteres.</string>
